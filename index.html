@@ -1,37 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Handwriting to Text Converter</title>
+    <title>Smart Handwriting OCR</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
 
     <style>
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            color: white;
         }
 
         .container {
-            background: white;
-            padding: 30px;
-            width: 450px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.95);
+            width: 600px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             text-align: center;
+            position: relative;
         }
 
         h1 {
-            margin-bottom: 10px;
-            color: #333;
+            margin: 0;
+            font-size: 28px;
+            color: #222;
         }
 
         p {
-            color: #666;
             font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .study-img {
+            width: 120px;
+            margin: 15px auto;
         }
 
         input {
@@ -46,33 +55,41 @@
 
         textarea {
             width: 100%;
-            height: 120px;
+            height: 130px;
             margin-top: 15px;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 12px;
             border: 1px solid #ccc;
-            resize: none;
+            font-size: 14px;
         }
 
         button {
-            background: #667eea;
-            color: white;
+            margin-top: 15px;
+            padding: 12px 25px;
             border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
             border-radius: 8px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-size: 14px;
             cursor: pointer;
             transition: 0.3s;
         }
 
         button:hover {
-            background: #5a67d8;
+            transform: scale(1.05);
         }
 
-        .footer {
-            margin-top: 15px;
-            font-size: 12px;
-            color: gray;
+        .design-line {
+            margin-top: 30px;
+            height: 4px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 5px;
+        }
+
+        .footer-text {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #777;
         }
     </style>
 </head>
@@ -80,21 +97,20 @@
 <body>
 
 <div class="container">
-    <h1>📝 Handwriting to Text</h1>
-    <p>Upload your handwritten image and convert it into editable text</p>
+    <h1>🧠 Smart Handwriting to Text Converter</h1>
+    <p>Transform your handwritten notes into clean, editable digital text instantly.</p>
+
+    <img class="study-img" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
 
     <input type="file" id="imageInput" accept="image/*">
     <img id="preview">
 
     <button onclick="convertImage()">Convert to Text</button>
 
-    <textarea id="outputText" placeholder="Extracted text will appear here..."></textarea>
+    <textarea id="outputText" placeholder="Your extracted text will appear here..."></textarea>
 
-    <button onclick="copyText()">Copy Text</button>
-
-    <div class="footer">
-        Built by Varun 🚀
-    </div>
+    <div class="design-line"></div>
+    <div class="footer-text">Built with ❤️ by Varun | OCR Web Project</div>
 </div>
 
 <script>
@@ -110,28 +126,52 @@ imageInput.addEventListener('change', function() {
     reader.readAsDataURL(file);
 });
 
-function convertImage() {
-    const image = preview.src;
+function preprocessImage(image) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = image;
 
-    if (!image) {
+    return new Promise(resolve => {
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                let gray = (data[i] + data[i+1] + data[i+2]) / 3;
+                gray = gray > 120 ? 255 : 0;
+                data[i] = gray;
+                data[i+1] = gray;
+                data[i+2] = gray;
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            resolve(canvas.toDataURL());
+        }
+    });
+}
+
+async function convertImage() {
+    if (!preview.src) {
         alert("Please upload an image first!");
         return;
     }
 
+    document.getElementById("outputText").value = "Processing... Please wait ⏳";
+
+    const processedImage = await preprocessImage(preview.src);
+
     Tesseract.recognize(
-        image,
+        processedImage,
         'eng',
         { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {
         document.getElementById("outputText").value = text;
     });
-}
-
-function copyText() {
-    const textArea = document.getElementById("outputText");
-    textArea.select();
-    document.execCommand("copy");
-    alert("Text copied!");
 }
 </script>
 
