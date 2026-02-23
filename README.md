@@ -1,2 +1,2 @@
 # handwritten-ocr
-varun lodu
+varun chutiya 
