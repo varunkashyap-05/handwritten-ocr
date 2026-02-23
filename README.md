@@ -26,6 +26,7 @@
     </style>
 </head>
 <body>
+<p> hy udittttt</p>
 
     <h1>Handwritten Image to Text</h1>
 
