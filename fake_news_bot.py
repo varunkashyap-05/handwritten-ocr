@@ -13,8 +13,8 @@ from google.generativeai.types import HarmCategory, HarmBlockThreshold
 # CONFIGURATION
 # Set these in your environment variables or paste them here directly.
 # ==========================================
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8744479426:AAEmt6iHsdKeKXf9ep53z2gu5x5aDpJpBW4")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCEGFejhO2C8zvUE8MmR03VaM2w-gWQP4Q")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # Initialize Gemini AI
 genai.configure(api_key=GEMINI_API_KEY)
